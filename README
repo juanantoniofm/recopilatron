@@ -1,0 +1,7 @@
+# Little script to retrieve files with scp.
+# Files:
+# 	hosts.cnf -> list of files to be retrieved. Use a line like this:
+			user@host:password:/route/to/the/file
+			** NOTE: this has some security issues. use at your own risk.
+	recopilatron.sh -> executable itself. You have to configure it before use. Edit the file and you will see the variables documented.
+
