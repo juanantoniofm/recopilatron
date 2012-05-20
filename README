@@ -1,7 +1,20 @@
-# Little script to retrieve files with scp.
+# Recopilatron
+#
+# This is a little script to ease the management of configuration files across a cluster whith many computers.
+# First, you configure the files you need to manage in the hosts.cnf file.
+# Then, run the program. You will get a directory, with a folder for each host. Inside those folders, are the configuration files than have been downloaded. Now you can edit those files with the aid of comparison tools, so all config's will be consistent across every host. 
+# Once the configuration has been done locally, you can upload it to the hosts, and it will be applied.
+#
+# You can use this to do much more things, like storing this configuration files in a Vesion Control System, so you can always manage version with ease.
+#
+## Little script to retrieve files with scp.
 # Files:
 # 	hosts.cnf -> list of files to be retrieved. Use a line like this:
 			user@host:password:/route/to/the/file
 			** NOTE: this has some security issues. use at your own risk.
 	recopilatron.sh -> executable itself. You have to configure it before use. Edit the file and you will see the variables documented.
+
+
+# by juanantoniofm.11 at gmail.com
+# # with the guidance and advice of adolfo.pa ;)
 
