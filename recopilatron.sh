@@ -8,16 +8,19 @@
 # when the name of the file is duplicated in destination, the tests fail and one steps over another
 # 
 
-# Opciones del script
-set -o nounset # evita que el script maneje variables vacias.
+## OPTIONS
 
-# Ruta base. Para cuando queremos colocar los archivos en un directorio diferente al de ejecucion
-BASEDIR="apachectl"
-# Archivo de log. Por defecto es recopilator.log
-LOGFILE=recopilator.$BASEDIR.log
+# Base Directory. Change this to put all the files in a single directory
+BASEDIR="remoteFiles"
+
+# Logfile. Default is recopilatron.$BASEDIR.log
+LOGFILE=recopilatron.$BASEDIR.log
 
 # Timeout. a little extra time for the transfers to finish. a minute is not so much time (it takes around 30min to get 120 files)
 TIMEOUT=60
+
+# Avoids use of empty Variables
+set -o nounset 
 
 
 extract_field() {
@@ -40,13 +43,13 @@ logit() {
 }
 
 
-# I use a temporary file, until i know how to remove the comments out of each line
+# I use a temporary file #TODO: change this with a regular expression
 mv hosts.cnf hosts.tmp
 cat hosts.tmp | grep -v ^# > hosts.cnf
 
 # start loggin
 logit "$(basename $0)"
-logit "$(date)"
+logit "--- BEGIN $(date) --- "
 
 for host_line in $(cat hosts.cnf); do
 	cstr=$(extract_field '$1')
@@ -54,18 +57,18 @@ for host_line in $(cat hosts.cnf); do
 	srcdir=$(extract_field '$3')
 	destdir=$(echo $cstr | sed 's/.*@\(.*\)/\1/')
 
-	logit "Destino: "$BASEDIR/$destdir" - Origen: "$cstr":"$srcdir
+	logit "Destination: "$BASEDIR/$destdir" - Origin: "$cstr":"$srcdir
 	
-	# crea un directorio para el host, si no existe ya
+	# creates the destination directory
 	if [ ! -d $BASEDIR/$destdir ]; then
 		mkdir -p $BASEDIR/$destdir
 	fi
 	
-	#Comprueba que no existe el archivo destino, y existe, hace un backup
+	#Check if the file already exists in destination, and if so, make backup.
 	archivo=$( basename $srcdir )
 	
 	if [ -r $BASEDIR/$destdir/$archivo ]; then
-		logit "Copia existente. Realizando backup de $BASEDIR/$destdir/$archivo"
+		logit "Exists in destination. Making backup of $BASEDIR/$destdir/$archivo"
 		mv --backup=numbered $BASEDIR/$destdir/$archivo $BASEDIR/$destdir/$archivo.bck
 	fi
 	
@@ -74,11 +77,11 @@ for host_line in $(cat hosts.cnf); do
 
 done
 
-# we have to wait a little bit, so all transfers can finish properly. You'll have to adjust this manually
+# we have to wait a little bit, so all transfers can finish properly. You can adjust this manually in the above options
 sleep $TIMEOUT
 
 logit "$(date)"
-logit "comenzamos comprobaciones"
+logit "Starting post-checks"
 
 # And after all, do the checks and logfile assembly
 for host_line in $(cat hosts.cnf); do
@@ -86,24 +89,24 @@ for host_line in $(cat hosts.cnf); do
 	srcdir=$(extract_field '$3')
 	destdir=$(echo $cstr | sed 's/.*@\(.*\)/\1/')
 	archivo=$( basename $srcdir )
-	# Comprueba que existe el archivo destino, y sino, lanza un error.
+	# Check if destination exists.
         if [ -e $BASEDIR/$destdir/$archivo ]; then
-	        logit "Archivo $destdir/$archivo obtenido correctamente" 
+	        logit "File $destdir/$archivo obtained" 
 	else
-		logit "ERROR El archivo $archivo de $destdir no ha llegado correctamente a su destino"
+		logit "ERROR file $archivo in $destdir has not arrived well"
         fi
 
-	# añade el resultado de empty al log
+	# add the result from "empty's" logs to the logfile
 	logit "$(cat $BASEDIR/$destdir/$archivo~$LOGFILE)"
 	# and cleans the "empty" temporal logfiles
 	# rm $BASEDIR/$destdir/$archivo~$LOGFILE
 done 
 
-# restablecemos el estado del archivo hosts.cnf antes de la limpieza.
+# Set back the original hosts.cnf
 mv hosts.cnf hosts.old
 mv hosts.tmp hosts.cnf
 
-logit " -- Finalizado $( date ) --\
+logit " -- END $( date ) --\
 	"
 exit
 
