@@ -1,4 +1,5 @@
 # Recopilatron
+# Vx.1  testing and unstable
 #
 # This is a little script to ease the management of configuration files across a cluster whith many computers.
 # First, you configure the files you need to manage in the hosts.cnf file.
